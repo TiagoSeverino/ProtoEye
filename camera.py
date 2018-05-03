@@ -9,6 +9,8 @@ cap = cv2.VideoCapture(1) # 0 is the default camera of the laptop, 1 is the USB 
 template = cv2.imread(S, cv2.IMREAD_GRAYSCALE)
 
 ret, template = cv2.threshold(template, 160, 255, cv2.THRESH_BINARY)
+template = cv2.erode(template, None, iterations=2)
+template = cv2.dilate(template, None, iterations=2)
 
 cv2.imshow('template', template)
 
@@ -16,10 +18,12 @@ while(True):
 	ret, frame = cap.read()
 
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	ret, binary = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)
+	ret, binary = cv2.threshold(gray, 85, 255, cv2.THRESH_BINARY)
+	binary = cv2.erode(binary, None, iterations=3)
+	binary = cv2.dilate(binary, None, iterations=4)
 
 	w, h = template.shape[::-1]
-	res = cv2.matchTemplate(binary,template, 1)
+	res = cv2.matchTemplate(binary, template, 1)
 	min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
 	top_left = min_loc
