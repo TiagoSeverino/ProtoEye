@@ -7,6 +7,7 @@ S = 'char/S.png'
 
 cap = cv2.VideoCapture(1) # 0 is the default camera of the laptop, 1 is the USB camera
 template = cv2.imread(S, cv2.IMREAD_GRAYSCALE)
+template = cv2.blur(template, (10,10))
 
 ret, template = cv2.threshold(template, 160, 255, cv2.THRESH_BINARY)
 template = cv2.erode(template, None, iterations=2)
@@ -18,7 +19,8 @@ while(True):
 	ret, frame = cap.read()
 
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	ret, binary = cv2.threshold(gray, 85, 255, cv2.THRESH_BINARY)
+	blur = cv2.blur(gray, (10,10))
+	ret, binary = cv2.threshold(blur, 85, 255, cv2.THRESH_BINARY)
 	binary = cv2.erode(binary, None, iterations=3)
 	binary = cv2.dilate(binary, None, iterations=4)
 
