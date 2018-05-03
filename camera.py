@@ -8,7 +8,7 @@ S = 'char/S.png'
 cap = cv2.VideoCapture(1) # 0 is the default camera of the laptop, 1 is the USB camera
 template = cv2.imread(S, cv2.IMREAD_GRAYSCALE)
 
-ret, binary = cv2.threshold(template, 127, 255, cv2.THRESH_BINARY)
+ret, template = cv2.threshold(template, 160, 255, cv2.THRESH_BINARY)
 
 cv2.imshow('template', template)
 
