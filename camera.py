@@ -23,7 +23,7 @@ while(True):
 	binary = cv2.dilate(binary, None, iterations=4)
 
 	w, h = template.shape[::-1]
-	res = cv2.matchTemplate(binary, template, 1)
+	res = cv2.matchTemplate(binary, template, cv2.TM_SQDIFF_NORMED)
 	min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
 	top_left = min_loc
