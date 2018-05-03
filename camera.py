@@ -16,9 +16,10 @@ while(True):
 	ret, frame = cap.read()
 
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	ret, binary = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)
 
 	w, h = template.shape[::-1]
-	res = cv2.matchTemplate(gray,template, 1)
+	res = cv2.matchTemplate(binary,template, 1)
 	min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
 	top_left = min_loc
@@ -26,6 +27,7 @@ while(True):
 	cv2.rectangle(frame,top_left, bottom_right, 255, 2)
 
 	cv2.imshow('frame', frame)
+	cv2.imshow('binary', binary)
 	cv2.waitKey(25)
 
 	if cv2.waitKey(1) & 0xFF == ord('q'):
