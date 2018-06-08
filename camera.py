@@ -10,6 +10,7 @@ template_dataU=[]
 temp_dirs=[]
 letterFound=False
 
+#directories
 filesH = glob.glob('char/H/*.png')
 filesS = glob.glob('char/S/*.png')
 filesU = glob.glob('char/U/*.png')
@@ -37,16 +38,19 @@ def print_template_data():
 				print file
 
 
-
-cap = cv2.VideoCapture(1) # 0 is the default camera of the laptop, 1 is the USB camera
+#get image from cameras and set resolutions
+cap1 = cv2.VideoCapture(2)
+cap1.set(3,352)
+cap1.set(4,240)
+cap2 = cv2.VideoCapture(1)
+cap2.set(3,352)
+cap2.set(4,240)
 
 
 while letterFound == False:
-
 	for dir in temp_dirs:
 		for temp in dir:
-
-			letter = temp
+			letter = str(temp[5])
 			template = cv2.imread(temp, cv2.IMREAD_GRAYSCALE)
 			template = cv2.blur(template, (10,10))
 
@@ -54,50 +58,77 @@ while letterFound == False:
 			template = cv2.erode(template, None, iterations=2)
 			template = cv2.dilate(template, None, iterations=2)
 
-			ret, frame = cap.read()
-			gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-			blur = cv2.blur(gray, (10,10))
-			ret, binary = cv2.threshold(blur, 85, 255, cv2.THRESH_BINARY)
-			binary = cv2.erode(binary, None, iterations=3)
-			binary = cv2.dilate(binary, None, iterations=4)
+			#frame 1 image treatment
+			ret1, frame1 = cap1.read()
+			gray1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+			blur1 = cv2.blur(gray1, (10,10))
+			ret1, binary1 = cv2.threshold(blur1, 85, 255, cv2.THRESH_BINARY)
+			binary1 = cv2.erode(binary1, None, iterations=3)
+			binary1 = cv2.dilate(binary1, None, iterations=4)
+			
+			#frame 2 image treatment
+			ret2, frame2 = cap2.read()
+			gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+			blur2 = cv2.blur(gray2, (10,10))
+			ret2, binary2 = cv2.threshold(blur2, 85, 255, cv2.THRESH_BINARY)
+			binary2 = cv2.erode(binary2, None, iterations=3)
+			binary2 = cv2.dilate(binary2, None, iterations=4)
 
+
+
+			#checking for letters in binary
 			w, h = template.shape[::-1]
-			res = cv2.matchTemplate(binary, template, cv2.TM_CCOEFF_NORMED)
+			res1 = cv2.matchTemplate(binary1, template, cv2.TM_CCOEFF_NORMED)
+			res2 = cv2.matchTemplate(binary2, template, cv2.TM_CCOEFF_NORMED)
 
 			# Specify a threshold
 			#0.7 was giving false readings on "U" while hunting for "H"
 			#0.6 for non H
 			#0.75 for H
-			threshold = 0.75
+			if letter == "H":
+				threshold = 0.75
+			else:
+				threshold = 0.6
 			
 			# Store the coordinates of matched area in a numpy array
-			loc = np.where(res >= threshold) 
+			loc1 = np.where(res1 >= threshold)
+			loc2 = np.where(res2 >= threshold) 
 
 			#Checks if a letter was detected
-			if np.amax(res) >= threshold:
-				certainty = int(np.amax(res)*100)
+			if np.amax(res1) >= threshold:
+				certainty = int(np.amax(res1)*100)
 				letterFound = True
-				
-			# Draw a rectangle around the matched region.
-			for pt in zip(*loc[::-1]):
-				cv2.rectangle(frame, pt, (pt[0] + w, pt[1] + h), (255, 0, 0), 1)
+				for pt in zip(*loc1[::-1]):
+					cv2.rectangle(frame1, pt, (pt[0] + w, pt[1] + h), (255, 0, 0), 1)
+
+			if np.amax(res2) >= threshold:
+				certainty = int(np.amax(res2)*100)
+				letterFound = True
+				for pt in zip(*loc2[::-1]):
+					cv2.rectangle(frame2, pt, (pt[0] + w, pt[1] + h), (255, 0, 0), 1)
+
 
 			#Display frames
 			cv2.imshow('template', template)
-			cv2.imshow('binary', binary)
-			cv2.imshow('frame', frame)
+			cv2.imshow('binary1', binary1)
+			cv2.imshow('binary2', binary2)
+			cv2.imshow('frame1', frame1)
+			cv2.imshow('frame2', frame2)
 			cv2.waitKey(25)
 
 		if letterFound:
 			break
+		if cv2.waitKey(1) & 0xFF == ord('q'):
+			break
 	#Quits if letter is found and prints what letter it detected
 	if letterFound:
-		print str(letter[5]) + " found with " + str(certainty) + "% certainty."
+		print letter + " found with " + str(certainty) + "% certainty."
 		break
 
 	#Quits the program when "q" is pressed
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
 
-cap.release()
+cap1.release()
+cap2.release()
 cv2.destroyAllWindows()
