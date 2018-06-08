@@ -94,7 +94,7 @@ while letterFound == False:
 			loc1 = np.where(res1 >= threshold)
 			loc2 = np.where(res2 >= threshold) 
 
-			#Checks if a letter was detected in
+			#Checks if a letter was detected
 			if np.amax(res1) >= threshold:
 				certainty = int(np.amax(res1)*100)
 				letterFound = True
